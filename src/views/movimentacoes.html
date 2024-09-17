@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movimentações de Estoque</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><button onclick="window.location.href='/menu.html'">Voltar para o Menu</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1>Movimentações de Estoque</h1>
+    <form id="movimentacao-form">
+      <select id="tipo">
+        <option value="entrada">Entrada</option>
+        <option value="saida">Saída</option>
+      </select>
+      <input type="number" id="produto_id" placeholder="ID do Produto" required>
+      <input type="number" id="quantidade" placeholder="Quantidade" required>
+      <button type="submit">Registrar Movimentação</button>
+    </form>
+
+    <h2>Listagem de Movimentações</h2>
+    <ul id="lista-movimentacoes"></ul>
+  </div>
+
+  <script>
+    document.getElementById('movimentacao-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const tipo = document.getElementById('tipo').value;
+      const produto_id = document.getElementById('produto_id').value;
+      const quantidade = document.getElementById('quantidade').value;
+
+      const response = await fetch('/movimentacoes/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ produto_id, tipo, quantidade })
+      });
+
+      if (response.ok) {
+        alert('Movimentação registrada com sucesso!');
+        carregarMovimentacoes();
+      } else {
+        alert('Erro ao registrar movimentação');
+      }
+    });
+
+    async function carregarMovimentacoes() {
+      const response = await fetch('/movimentacoes/list', {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+      });
+      const movimentacoes = await response.json();
+      const listaMovimentacoes = document.getElementById('lista-movimentacoes');
+      listaMovimentacoes.innerHTML = '';
+      movimentacoes.forEach(mov => {
+        const item = document.createElement('li');
+        item.textContent = `Produto ID: ${mov.produto_id}, Tipo: ${mov.tipo}, Quantidade: ${mov.quantidade}, Data: ${new Date(mov.data).toLocaleString()}`;
+        listaMovimentacoes.appendChild(item);
+      });
+    }
+
+    carregarMovimentacoes();
+  </script>
+</body>
+</html>

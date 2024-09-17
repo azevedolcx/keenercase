@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Produtos</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <ul>
+        <li><button onclick="window.location.href='/menu.html'">Voltar para o Menu</button></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h1>Cadastro de Produtos</h1>
+    <form id="produto-form">
+      <input type="text" id="nome" placeholder="Nome do Produto" required>
+      <input type="number" id="quantidade" placeholder="Quantidade" required>
+      <button type="submit">Cadastrar Produto</button>
+    </form>
+
+    <h2>Listagem de Produtos</h2>
+    <ul id="lista-produtos"></ul>
+  </div>
+
+  <script>
+    document.getElementById('produto-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const quantidade = document.getElementById('quantidade').value;
+
+      const response = await fetch('/produtos/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        },
+        body: JSON.stringify({ nome, quantidade })
+      });
+
+      if (response.ok) {
+        alert('Produto cadastrado com sucesso!');
+        carregarProdutos();
+      } else {
+        alert('Erro ao cadastrar produto');
+      }
+    });
+
+    async function carregarProdutos() {
+      const response = await fetch('/produtos/list', {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('token')
+        }
+      });
+      const produtos = await response.json();
+      const listaProdutos = document.getElementById('lista-produtos');
+      listaProdutos.innerHTML = '';
+      produtos.forEach(produto => {
+        const item = document.createElement('li');
+        item.textContent = `Nome: ${produto.nome}, Quantidade: ${produto.quantidade}`;
+        listaProdutos.appendChild(item);
+      });
+    }
+
+    carregarProdutos();
+  </script>
+</body>
+</html>
